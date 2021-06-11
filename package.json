@@ -12,5 +12,6 @@
         "gl-matrix": "github:toji/gl-matrix",
         "stats.js": "^0.17.0",
         "three": "^0.129.0",
+        "two.js": "^0.7.5"
     }
 }
