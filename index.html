@@ -42,9 +42,33 @@
         width: 50%;
         height: 100%;
       }
+
+      #leftLabel {
+        display: block;
+        text-align: center;
+        width: 50%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        color: white;
+      }
+
+      #rightLabel {
+        display: block;
+        text-align: center;
+        width: 50%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 10;
+        color: white;
+      }
     </style>
   </head>
   <body>
+    <h3 id='leftLabel'></h3>
+    <h3 id='rightLabel'>WebGPU</h3>
     <script type="importmap">
       {
           "imports": {
@@ -67,27 +91,6 @@
         source: 'imageBitmap',
       };
 
-      let gui = new dat.GUI();
-      document.body.appendChild(gui.domElement);
-
-      gui.add(appSettings, 'source', {
-        'Canvas ImageBitmap': 'imageBitmap',
-        'Three (WebGL)': 'three',
-      }).onChange(() => {
-        switch (appSettings.controls) {
-          case 'orbit': {
-            camera.remove(FlyingControls);
-            camera.add(new OrbitControls());
-            break;
-          }
-          case 'flying': {
-            camera.remove(OrbitControls);
-            camera.add(new FlyingControls());
-            break;
-          }
-        }
-      });
-
       const stats = new Stats();
       document.body.appendChild(stats.dom);
 
@@ -98,6 +101,19 @@
       const webgpuScene = new WebGPUScene();
       document.body.appendChild(webgpuScene.canvas);
       webgpuScene.canvas.classList.add('webgpu');
+
+      function onExternalSourceChange() {
+        const label = document.getElementById('leftLabel');
+        switch(appSettings.source) {
+          case 'three':
+            label.innerText = 'WebGL';
+            break;
+          case 'imageBitmap':
+            label.innerText = 'WebGL, copied with createImageBitmap()';
+            break;
+        }
+      }
+      onExternalSourceChange();
 
       async function updateExternalTexture() {
         let source = null;
@@ -132,6 +148,14 @@
         stats.update();
       }
       requestAnimationFrame(onFrame);
+
+      let gui = new dat.GUI();
+      document.body.appendChild(gui.domElement);
+
+      gui.add(appSettings, 'source', {
+        'Canvas ImageBitmap': 'imageBitmap',
+        'Three (WebGL)': 'three',
+      }).onChange(onExternalSourceChange);
     </script>
   </body>
 </html>
