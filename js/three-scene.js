@@ -9,8 +9,8 @@ export class ThreeScene {
     this.camera.position.z = 2750;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color( 0x050505 );
-    this.scene.fog = new THREE.Fog( 0x050505, 2000, 3500 );
+    this.scene.background = new THREE.Color( 0x000500 );
+    this.scene.fog = new THREE.Fog( 0x000500, 2000, 3500 );
 
     //
 
