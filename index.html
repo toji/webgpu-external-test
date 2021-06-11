@@ -1,0 +1,137 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+
+    <title>WebGPU External Texture Test</title>
+
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        background-color: #000066;
+      }
+
+      .dg.main {
+        position: absolute;
+        z-index: 100;
+        top: 1em;
+        right: 1em;
+      }
+
+      canvas.three, canvas.two {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 50%;
+        width: 50%;
+        height: 100%;
+      }
+
+      canvas.webgpu {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        bottom: 0;
+        right: 0;
+        width: 50%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+          "imports": {
+              "gl-matrix": "./node_modules/gl-matrix/dist/esm/index.js",
+              "three": "./node_modules/three/build/three.module.js",
+              "webgpu-texture-loader": "./node_modules/web-texture-tool/build/webgpu-texture-loader.js",
+              "dat.gui": "./node_modules/dat.gui/build/dat.gui.module.js",
+              "stats.js": "./node_modules/stats.js/src/Stats.js"
+          }
+      }
+    </script>
+    <script type="module">
+      import dat from 'dat.gui';
+      import Stats from 'stats.js';
+      import { ThreeScene } from './js/three-scene.js';
+      //import { TwoScene } from './js/two-scene.js';
+      import { WebGPUScene } from './js/webgpu-scene.js';
+
+      const appSettings = {
+        source: 'imageBitmap',
+      };
+
+      let gui = new dat.GUI();
+      document.body.appendChild(gui.domElement);
+
+      gui.add(appSettings, 'source', {
+        'Canvas ImageBitmap': 'imageBitmap',
+        'Three (WebGL)': 'three',
+      }).onChange(() => {
+        switch (appSettings.controls) {
+          case 'orbit': {
+            camera.remove(FlyingControls);
+            camera.add(new OrbitControls());
+            break;
+          }
+          case 'flying': {
+            camera.remove(OrbitControls);
+            camera.add(new FlyingControls());
+            break;
+          }
+        }
+      });
+
+      const stats = new Stats();
+      document.body.appendChild(stats.dom);
+
+      const threeScene = new ThreeScene();
+      document.body.appendChild(threeScene.canvas);
+      threeScene.canvas.classList.add('three');
+
+      const webgpuScene = new WebGPUScene();
+      document.body.appendChild(webgpuScene.canvas);
+      webgpuScene.canvas.classList.add('webgpu');
+
+      async function updateExternalTexture() {
+        let source = null;
+        switch(appSettings.source) {
+          case 'three':
+            source = threeScene.canvas;
+            break;
+          case 'imageBitmap':
+            source = await createImageBitmap(threeScene.canvas);
+            break;
+        }
+
+        if (source) {
+          webgpuScene.updateExternalTexture(source);
+        }
+      }
+
+      function onFrame() {
+        requestAnimationFrame(onFrame);
+
+        switch(appSettings.source) {
+          case 'three':
+          case 'imageBitmap':
+            threeScene.render();
+            break;
+        }
+
+        updateExternalTexture();
+
+        webgpuScene.render();
+
+        stats.update();
+      }
+      requestAnimationFrame(onFrame);
+    </script>
+  </body>
+</html>
